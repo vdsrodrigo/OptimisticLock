@@ -1,0 +1,11 @@
+config:
+  target: 'http://localhost:5105'
+  phases:
+    - duration: 60
+      arrivalRate: 100
+scenarios:
+  - flow:
+    - patch:
+        url: "/acumulador?acumulo=100"
+        json:
+          acumulo: 1

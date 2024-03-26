@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C541D10A-E953-4E58-B0F7-FE24CA3B6BC7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{CC6AE3F8-C887-4769-8251-B05199FE9828}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OptimisticLock", "src\OptimisticLock.csproj", "{A5398BC7-666D-4ED0-A1B2-90CD9EA32CC1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A5398BC7-666D-4ED0-A1B2-90CD9EA32CC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5398BC7-666D-4ED0-A1B2-90CD9EA32CC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5398BC7-666D-4ED0-A1B2-90CD9EA32CC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5398BC7-666D-4ED0-A1B2-90CD9EA32CC1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A5398BC7-666D-4ED0-A1B2-90CD9EA32CC1} = {C541D10A-E953-4E58-B0F7-FE24CA3B6BC7}
+	EndGlobalSection
+EndGlobal

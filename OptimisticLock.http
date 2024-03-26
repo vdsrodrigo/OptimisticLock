@@ -1,0 +1,14 @@
+@OptimisticLock_HostAddress = http://localhost:5207
+
+GET {{OptimisticLock_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+POST {{OptimisticLock_HostAddress}}/acumuladorIndividual?acumulo=100
+Accept: application/json
+
+###
+
+PATCH {{OptimisticLock_HostAddress}}/acumulador?acumulo=100
+Accept: application/json
