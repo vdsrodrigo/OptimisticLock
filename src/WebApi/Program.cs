@@ -1,29 +1,36 @@
+using HealthChecks.UI.Client;
+using HealthChecks.UI.Configuration;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+using WebApi;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.ConfigureHealthChecks(builder.Configuration);
+
 var configuration = builder.Configuration;
 builder.Services.AddDbContext<AcumuloContext>(options =>
-    options.UseNpgsql(configuration.GetSection("Database").GetValue<string>("ConnectionString")));
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
-builder.Services.AddHealthChecks()
-    .AddDbContextCheck<AcumuloContext>("PostgreSQL", HealthStatus.Unhealthy, new[] { "database" });
+    options.UseNpgsql(configuration.GetConnectionString("PostgresDB")));
 
 var app = builder.Build();
-app.MapHealthChecks("/health");
-
 if (app.Environment.IsDevelopment())
-
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseDeveloperExceptionPage();
 }
 
+app.MapHealthChecks("/api/health", new HealthCheckOptions()
+{
+    Predicate = _ => true,
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+app.UseHealthChecksUI(delegate(Options options) { options.UIPath = "/healthcheck-ui"; });
+
 app.UseHttpsRedirection();
+
 
 app.MapPost("/acumuladorIndividual", async (AcumuloContext db, int acumulo) =>
     {
