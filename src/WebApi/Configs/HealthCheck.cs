@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace WebApi;
+namespace WebApi.Configs;
 
 public static class HealthCheck
 {
