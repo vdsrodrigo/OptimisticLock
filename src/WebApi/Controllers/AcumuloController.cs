@@ -7,11 +7,12 @@ namespace WebApi.Controllers
     [Route("api/v1/acumulo")]
     public class AcumuloController : ControllerBase
     {
-
         private readonly AcumuloContext _db;
-        public AcumuloController(AcumuloContext db)
+        private readonly ILogger<AcumuloController> _logger;
+        public AcumuloController(AcumuloContext db, ILogger<AcumuloController> logger)
         {
             _db = db;
+            _logger = logger;
         }
 
         /// <summary>
@@ -23,9 +24,12 @@ namespace WebApi.Controllers
         [ProducesResponseType(204)]
         public async Task<IActionResult> Post([FromBody] int acumulo)
         {
+            _logger.LogInformation("Adicionando um novo registro no banco de dados");
 
             _db.Add(new ShellRepository { Nome = "Shell", Valor = acumulo, RowVersion = 1 });
             await _db.SaveChangesAsync();
+
+            _logger.LogInformation("Registro adicionado com sucesso");
 
             return NoContent();
         }
@@ -39,6 +43,7 @@ namespace WebApi.Controllers
         [ProducesResponseType(200)]
         public async Task<IActionResult> Patch([FromBody] int acumulo)
         {
+            _logger.LogInformation("Atualizando o valor do acumulador no primeiro registro do banco de dados");
             const int maximoDeTentativas = 20;
             var totalDeConflitos = 0;
             for (int tentativa = 0; tentativa < maximoDeTentativas; tentativa++)
@@ -52,6 +57,8 @@ namespace WebApi.Controllers
                     shell.RowVersion += 1;
 
                     await _db.SaveChangesAsync();
+                    _logger.LogInformation("Registro atualizado com sucesso");
+
                     return Ok($"Quantidade de conflitos ocorridas :{totalDeConflitos}");
                 }
                 catch (DbUpdateConcurrencyException) when (tentativa < maximoDeTentativas - 1)

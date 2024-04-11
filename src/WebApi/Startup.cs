@@ -1,5 +1,6 @@
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Serilog;
 using WebApi.Configs;
 
 namespace WebApi;
@@ -35,6 +36,7 @@ public class Startup : IStartup
             options.RoutePrefix = string.Empty;
         }); app.UseDeveloperExceptionPage();
 
+        app.UseSerilogRequestLogging();
         app.UseRouting();
         app.UseAuthorization();
 
