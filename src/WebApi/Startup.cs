@@ -1,4 +1,5 @@
 using HealthChecks.UI.Client;
+using HealthChecks.UI.Configuration;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
 using WebApi.Configs;
@@ -34,7 +35,9 @@ public class Startup : IStartup
         {
             options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
             options.RoutePrefix = string.Empty;
-        }); app.UseDeveloperExceptionPage();
+        });
+
+        app.UseDeveloperExceptionPage();
 
         app.UseSerilogRequestLogging();
         app.UseRouting();
@@ -49,6 +52,8 @@ public class Startup : IStartup
                 ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
             });
         });
+
+        app.UseHealthChecksUI(delegate(Options options) { options.UIPath = "/healthcheck-ui"; });
     }
 }
 
