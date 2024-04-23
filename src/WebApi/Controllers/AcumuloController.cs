@@ -1,5 +1,7 @@
+using Confluent.Kafka;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using WebApi.Configs;
 
 namespace WebApi.Controllers
 {
@@ -9,10 +11,25 @@ namespace WebApi.Controllers
     {
         private readonly AcumuloContext _db;
         private readonly ILogger<AcumuloController> _logger;
-        public AcumuloController(AcumuloContext db, ILogger<AcumuloController> logger)
+        private readonly KafkaConfig _kafkaConfig;
+        private IProducer<string, string> _producer;
+
+        public AcumuloController(AcumuloContext db, ILogger<AcumuloController> logger, KafkaConfig kafkaConfig)
         {
             _db = db;
             _logger = logger;
+            _kafkaConfig = kafkaConfig;
+
+            var config = new ProducerConfig
+            {
+                BootstrapServers = _kafkaConfig.BootstrapServers,
+                SecurityProtocol = SecurityProtocol.SaslSsl,
+                SaslMechanism = SaslMechanism.Plain,
+                SaslUsername = _kafkaConfig.SaslUsername,
+                SaslPassword = _kafkaConfig.SaslPassword
+            };
+
+            _producer = new ProducerBuilder<string, string>(config).Build();
         }
 
         /// <summary>
@@ -29,6 +46,17 @@ namespace WebApi.Controllers
             _db.Add(new ShellRepository { Nome = "Shell", Valor = acumulo, RowVersion = 1 });
             await _db.SaveChangesAsync();
 
+            // Criar a mensagem
+            var message = new Message<string, string>
+            {
+                Key = null,
+                Value = acumulo.ToString()
+            };
+
+            // Publicar a mensagem
+            var deliveryResult = await _producer.ProduceAsync("acumulo_pontos", message);
+            
+            
             _logger.LogInformation("Registro adicionado com sucesso");
 
             return NoContent();
@@ -70,5 +98,7 @@ namespace WebApi.Controllers
             Console.WriteLine(totalDeConflitos);
             return Ok($"Quantidade de conflitos ocorridas :{totalDeConflitos}");
         }
+
+        private async Task PublishMessage() { }
     }
 }

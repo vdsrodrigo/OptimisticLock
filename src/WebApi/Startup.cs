@@ -21,6 +21,10 @@ public class Startup : IStartup
         services.ConfigureDb(Configuration);
         services.ConfigureSwagger();
         services.ConfigureHealthChecks(Configuration);
+
+        var kafkaConfig = new KafkaConfig();
+        Configuration.GetSection("Kafka").Bind(kafkaConfig);
+        services.AddSingleton(kafkaConfig);
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -72,7 +76,6 @@ public static class StartupExtensions
             throw new ArgumentNullException("Startup not found");
 
         startup.ConfigureServices(builder.Services);
-
         var app = builder.Build();
         startup.Configure(app, builder.Environment);
         app.Run();

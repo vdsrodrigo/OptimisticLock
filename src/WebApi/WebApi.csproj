@@ -12,6 +12,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Confluent.Kafka" Version="2.3.0" />
         <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.2.0" />
         <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="8.0.1" />
         <PackageReference Include="AspNetCore.HealthChecks.Azure.Messaging.EventHubs" Version="8.0.1" />
@@ -21,6 +22,8 @@
         <PackageReference Include="AspNetCore.HealthChecks.UI" Version="8.0.1" />
         <PackageReference Include="AspNetCore.HealthChecks.MongoDb" Version="8.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.3" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Ini" Version="8.0.0" />
         <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2" />
