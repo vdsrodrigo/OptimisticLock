@@ -3,6 +3,7 @@ using HealthChecks.UI.Configuration;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
 using WebApi.Configs;
+using WebApi.Kafka;
 
 namespace WebApi;
 
@@ -25,6 +26,9 @@ public class Startup : IStartup
         var kafkaConfig = new KafkaConfig();
         Configuration.GetSection("Kafka").Bind(kafkaConfig);
         services.AddSingleton(kafkaConfig);
+
+        services.AddHostedService<KafkaConsumerBackgroundService>();
+
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
