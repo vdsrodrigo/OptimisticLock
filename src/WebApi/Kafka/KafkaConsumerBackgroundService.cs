@@ -28,7 +28,7 @@ public class KafkaConsumerBackgroundService : BackgroundService
         _consumer = new ConsumerBuilder<string, string>(config).Build();
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected async override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _consumer.Subscribe("acumulo_pontos");
 
@@ -36,10 +36,12 @@ public class KafkaConsumerBackgroundService : BackgroundService
         {
             try
             {
-                var consumeResult = _consumer.Consume(stoppingToken);
-
-                // Process the message
-                _logger.LogInformation($"Received message: {consumeResult.Message.Value}");
+                await Task.Run(() =>
+                {
+                    var consumeResult = _consumer.Consume(stoppingToken);
+                    _logger.LogInformation(
+                        $"Consumed message '{consumeResult.Message.Value}' at: '{consumeResult.TopicPartitionOffset}'.");
+                }, stoppingToken);
             }
             catch (ConsumeException ex)
             {
