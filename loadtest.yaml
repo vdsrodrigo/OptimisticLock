@@ -1,0 +1,26 @@
+﻿config:
+  target: "https://localhost:5001"
+  tls:
+    rejectUnauthorized: false
+  phases:
+    - duration: 60
+      arrivalRate: 10
+      maxVusers: 20
+      rampTo: 200
+
+scenarios:
+  - name: "acumuloIndividual"
+    flow:
+      - post:
+          url: "/api/v1/acumulo/acumuladorIndividual"
+          headers:
+            Content-Type: "application/json"
+          body: "500"
+
+  - name: "bolsaoAcumulo"
+    flow:
+      - patch:
+          url: "/api/v1/acumulo/acumulador"
+          headers:
+            Content-Type: "application/json"
+          body: "100"

@@ -23,8 +23,8 @@ namespace WebApi.Controllers
             var config = new ProducerConfig
             {
                 BootstrapServers = _kafkaConfig.BootstrapServers,
-                SecurityProtocol = SecurityProtocol.SaslSsl,
-                SaslMechanism = SaslMechanism.Plain,
+                SecurityProtocol = kafkaConfig.SecurityProtocol,
+                SaslMechanism = kafkaConfig.SaslMechanisms,
                 SaslUsername = _kafkaConfig.SaslUsername,
                 SaslPassword = _kafkaConfig.SaslPassword
             };
@@ -55,8 +55,8 @@ namespace WebApi.Controllers
 
             // Publicar a mensagem
             var deliveryResult = await _producer.ProduceAsync("acumulo_pontos", message);
-            
-            
+
+
             _logger.LogInformation("Registro adicionado com sucesso");
 
             return NoContent();

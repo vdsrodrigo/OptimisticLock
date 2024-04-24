@@ -1,8 +1,4 @@
 using Confluent.Kafka;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System.Threading;
-using System.Threading.Tasks;
 using WebApi.Configs;
 
 namespace WebApi.Kafka;
@@ -21,8 +17,8 @@ public class KafkaConsumerBackgroundService : BackgroundService
         var config = new ConsumerConfig
         {
             BootstrapServers = _kafkaConfig.BootstrapServers,
-            SecurityProtocol = SecurityProtocol.SaslSsl,
-            SaslMechanism = SaslMechanism.Plain,
+            SecurityProtocol = kafkaConfig.SecurityProtocol,
+            SaslMechanism = kafkaConfig.SaslMechanisms,
             SaslUsername = _kafkaConfig.SaslUsername,
             SaslPassword = _kafkaConfig.SaslPassword,
             GroupId = "acumulo_pontos_group",
