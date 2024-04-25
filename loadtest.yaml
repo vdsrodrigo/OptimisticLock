@@ -4,9 +4,9 @@
     rejectUnauthorized: false
   phases:
     - duration: 60
-      arrivalRate: 10
-      maxVusers: 20
-      rampTo: 200
+      arrivalRate: 100
+      maxVusers: 50
+      rampTo: 1000
 
 scenarios:
   - name: "acumuloIndividual"

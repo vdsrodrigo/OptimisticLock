@@ -27,7 +27,7 @@ public class Startup : IStartup
         Configuration.GetSection("Kafka").Bind(kafkaConfig);
         services.AddSingleton(kafkaConfig);
 
-        services.AddHostedService<KafkaConsumerBackgroundService>();
+        services.AddHostedService<AcumuloConsumer>();
 
     }
 
