@@ -4,16 +4,46 @@ services:
   postgres:
     container_name: postgres
     image: postgres:latest
+    volumes:
+      - db-data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
     ports:
       - "5432:5432"
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:latest
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_MAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PW}
+    ports:
+      - "5050:80"
+    restart: always
+
+  portainer:
+    image: portainer/portainer-ce:alpine
+    container_name: portainer
+    command: -H unix:///var/run/docker.sock
+    ports:
+      - "9000:9000"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "portainer_data:/data"
     restart: always
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data:Z
+      - zookeeper-log:/var/lib/zookeeper/log:Z
     networks:
       - broker-kafka
     environment:
@@ -24,14 +54,16 @@ services:
 
   kafka:
     image: confluentinc/cp-kafka:latest
-    container_name: kafka-dev
-    restart: "no"
+    container_name: kafka
+    volumes:
+      - kafka-data:/var/lib/kafka/data:Z
     networks:
       - broker-kafka
     depends_on:
       - zookeeper
     ports:
       - 9092:9092
+
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -69,4 +101,14 @@ services:
 
 networks:
   broker-kafka:
-    driver: bridge 
+    driver: bridge
+
+volumes:
+  portainer_data:
+  db-data:
+  zookeeper-data:
+    driver: local
+  zookeeper-log:
+    driver: local
+  kafka-data:
+    driver: local
