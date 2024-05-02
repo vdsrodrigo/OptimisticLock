@@ -1,5 +1,6 @@
 using Confluent.Kafka;
 using WebApi.Configs;
+using MongoDB.Driver;
 
 namespace WebApi.Kafka
 {
@@ -7,13 +8,20 @@ namespace WebApi.Kafka
     {
         private readonly KafkaConfig _kafkaConfig;
         private readonly ILogger<AcumuloConsumer> _logger;
-        private IConsumer<string, string> _consumer;
-        private IProducer<string, string> _producer;
+        private readonly IConsumer<string, string> _consumer;
+        private readonly IProducer<string, string> _producer;
+        private readonly AcumuloContext _db;
+        private readonly IMongoCollection<ShellRepository> _mongoCollection;
 
-        public AcumuloConsumer(ILogger<AcumuloConsumer> logger, KafkaConfig kafkaConfig)
+        public AcumuloConsumer(AcumuloContext db, ILogger<AcumuloConsumer> logger, KafkaConfig kafkaConfig, IConfiguration configuration)
         {
             _logger = logger;
             _kafkaConfig = kafkaConfig;
+            _db = db;
+            
+            var mongoClient = new MongoClient(configuration.GetConnectionString("MongoDB"));
+            var mongoDatabase = mongoClient.GetDatabase("myDatabase");
+            _mongoCollection = mongoDatabase.GetCollection<ShellRepository>("acumuladorShell");
 
             var config = new ConsumerConfig
             {
@@ -23,7 +31,7 @@ namespace WebApi.Kafka
                 SaslUsername = _kafkaConfig.SaslUsername,
                 SaslPassword = _kafkaConfig.SaslPassword,
                 GroupId = "acumulo_pontos_group",
-                AutoOffsetReset = AutoOffsetReset.Earliest
+                AutoOffsetReset = AutoOffsetReset.Latest
             };
 
             _consumer = new ConsumerBuilder<string, string>(config).Build();
@@ -45,6 +53,17 @@ namespace WebApi.Kafka
                         try
                         {
                             _logger.LogInformation($"Received message: {consumeResult.Message.Value}");
+                            _logger.LogInformation("Adicionando um novo registro no banco de dados");
+
+                            var shellRepository = new ShellRepository
+                                { Nome = "Shell", Valor = Convert.ToInt32(consumeResult.Message.Value), RowVersion = 1 };
+
+                            // inserindo no postgres
+                            _db.Add(shellRepository);
+                            await _db.SaveChangesAsync(stoppingToken);
+
+                            // inserindo no mongoDB
+                            await _mongoCollection.InsertOneAsync(shellRepository, cancellationToken:stoppingToken);
                         }
                         catch (Exception ex)
                         {
@@ -65,7 +84,7 @@ namespace WebApi.Kafka
                     _logger.LogError(ex, "Error consuming message");
                 }
 
-                await Task.Delay(1000, stoppingToken);
+                await Task.Delay(10, stoppingToken);
             }
 
             _consumer.Close();

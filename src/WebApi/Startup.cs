@@ -28,7 +28,7 @@ public class Startup : IStartup
         services.AddSingleton(kafkaConfig);
 
         services.AddHostedService<AcumuloConsumer>();
-
+        services.AddHostedService<AcumuloBolsaoConsumer>();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

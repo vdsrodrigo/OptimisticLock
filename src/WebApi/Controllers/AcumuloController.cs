@@ -1,6 +1,5 @@
 using Confluent.Kafka;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using WebApi.Configs;
 
 namespace WebApi.Controllers
@@ -9,22 +8,19 @@ namespace WebApi.Controllers
     [Route("api/v1/acumulo")]
     public class AcumuloController : ControllerBase
     {
-        private readonly AcumuloContext _db;
         private readonly ILogger<AcumuloController> _logger;
+        private readonly IProducer<string, string> _producer;
         private readonly KafkaConfig _kafkaConfig;
-        private IProducer<string, string> _producer;
 
-        public AcumuloController(AcumuloContext db, ILogger<AcumuloController> logger, KafkaConfig kafkaConfig)
+        public AcumuloController(KafkaConfig kafkaConfig ,ILogger<AcumuloController> logger)
         {
-            _db = db;
             _logger = logger;
             _kafkaConfig = kafkaConfig;
-
             var config = new ProducerConfig
             {
                 BootstrapServers = _kafkaConfig.BootstrapServers,
-                SecurityProtocol = kafkaConfig.SecurityProtocol,
-                SaslMechanism = kafkaConfig.SaslMechanisms,
+                SecurityProtocol = _kafkaConfig.SecurityProtocol,
+                SaslMechanism = _kafkaConfig.SaslMechanisms,
                 SaslUsername = _kafkaConfig.SaslUsername,
                 SaslPassword = _kafkaConfig.SaslPassword
             };
@@ -41,24 +37,15 @@ namespace WebApi.Controllers
         [ProducesResponseType(204)]
         public async Task<IActionResult> Post([FromBody] int acumulo)
         {
-            _logger.LogInformation("Adicionando um novo registro no banco de dados");
-
-            _db.Add(new ShellRepository { Nome = "Shell", Valor = acumulo, RowVersion = 1 });
-            await _db.SaveChangesAsync();
-
-            // Criar a mensagem
+            _logger.LogInformation("Produzindo mensagem para o tópico acumulo_pontos");
             var message = new Message<string, string>
             {
-                Key = null,
+                Key = Guid.NewGuid().ToString(),
                 Value = acumulo.ToString()
             };
 
-            // Publicar a mensagem
-            var deliveryResult = await _producer.ProduceAsync("acumulo_pontos", message);
-
-
-            _logger.LogInformation("Registro adicionado com sucesso");
-
+            await _producer.ProduceAsync("acumulo_pontos", message);
+            _logger.LogInformation("mensagem criada com sucesso!");
             return NoContent();
         }
 
@@ -71,34 +58,16 @@ namespace WebApi.Controllers
         [ProducesResponseType(200)]
         public async Task<IActionResult> Patch([FromBody] int acumulo)
         {
-            _logger.LogInformation("Atualizando o valor do acumulador no primeiro registro do banco de dados");
-            const int maximoDeTentativas = 20;
-            var totalDeConflitos = 0;
-            for (int tentativa = 0; tentativa < maximoDeTentativas; tentativa++)
+            _logger.LogInformation("Produzindo mensagem para o tópico acumulo_pontos_bolsao");
+            var message = new Message<string, string>
             {
-                try
-                {
-                    var shell = await _db.AcumuladorShell.FirstOrDefaultAsync();
-                    if (shell is null) return NotFound();
+                Key = Guid.NewGuid().ToString(),
+                Value = acumulo.ToString()
+            };
 
-                    shell.Valor += acumulo;
-                    shell.RowVersion += 1;
-
-                    await _db.SaveChangesAsync();
-                    _logger.LogInformation("Registro atualizado com sucesso");
-
-                    return Ok($"Quantidade de conflitos ocorridas :{totalDeConflitos}");
-                }
-                catch (DbUpdateConcurrencyException) when (tentativa < maximoDeTentativas - 1)
-                {
-                    totalDeConflitos++;
-                }
-            }
-
-            Console.WriteLine(totalDeConflitos);
-            return Ok($"Quantidade de conflitos ocorridas :{totalDeConflitos}");
+            await _producer.ProduceAsync("acumulo_pontos_bolsao", message);
+            _logger.LogInformation("mensagem criada com sucesso!");
+            return NoContent();
         }
-
-        private async Task PublishMessage() { }
     }
 }
